@@ -1,0 +1,27 @@
+// Seed data for the `offers` collection.
+// Import via Firebase Console → Firestore → Data → "Start collection"
+// with collection id `offers`. Timestamps must be created in the console
+// (the JSON below uses placeholder ISO strings — convert them to
+// Firestore timestamps when importing).
+[
+  {
+    "_id": "new_user_discount",
+    "title": "New user welcome offer",
+    "description": "Flat discount on your first booking",
+    "discountPercent": 15,
+    "imageUrl": null,
+    "isActive": true,
+    "validFrom": "2026-01-01T00:00:00Z",
+    "validTo": "2026-12-31T23:59:59Z"
+  },
+  {
+    "_id": "ac_season_offer",
+    "title": "AC servicing season",
+    "description": "Discount on AC service before summer",
+    "discountPercent": 10,
+    "imageUrl": null,
+    "isActive": true,
+    "validFrom": "2026-01-01T00:00:00Z",
+    "validTo": "2026-12-31T23:59:59Z"
+  }
+]

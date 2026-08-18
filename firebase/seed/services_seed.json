@@ -1,0 +1,135 @@
+// Seed data for the `services` collection.
+// Import via Firebase Console → Firestore → Data → "Start collection"
+// with collection id `services`, then paste each object as a document
+// (or use the bundled importer). Document ids below are recommended.
+//
+// Prices in INR. `tags: ["emergency"]` makes a category eligible for the
+// emergency dispatch flow. `iconKey` maps to the app's icon lookup.
+[
+  {
+    "_id": "electrical",
+    "name": "Electrical",
+    "nameLocalized": { "en": "Electrical", "ta": "மின் வேலை", "kn": "ವಿದ್ಯುತ್ ಕೆಲಸ", "hi": "इलेक्ट्रिकल" },
+    "iconKey": "electrical",
+    "minCharge": 199,
+    "serviceCharge": 299,
+    "sparePartsPriceList": {},
+    "gstPercent": 18,
+    "isActive": true,
+    "sortOrder": 1,
+    "tags": ["emergency"],
+    "description": "Wiring, switchboards, fittings and electrical repairs."
+  },
+  {
+    "_id": "plumbing",
+    "name": "Plumbing",
+    "nameLocalized": { "en": "Plumbing", "ta": "குழாய் வேலை", "kn": "ಕೊಳಾಯಿ ಕೆಲಸ", "hi": "प्लंबिंग" },
+    "iconKey": "plumbing",
+    "minCharge": 199,
+    "serviceCharge": 299,
+    "sparePartsPriceList": {},
+    "gstPercent": 18,
+    "isActive": true,
+    "sortOrder": 2,
+    "tags": ["emergency"],
+    "description": "Leaks, taps, pipes, sanitary fittings and drainage."
+  },
+  {
+    "_id": "ac_repair",
+    "name": "AC Repair",
+    "nameLocalized": { "en": "AC Repair", "ta": "ஏசி பழுது", "kn": "AC ರಿಪೇರಿ", "hi": "एसी रिपेयर" },
+    "iconKey": "ac_repair",
+    "minCharge": 299,
+    "serviceCharge": 399,
+    "sparePartsPriceList": {},
+    "gstPercent": 18,
+    "isActive": true,
+    "sortOrder": 3,
+    "tags": ["emergency"],
+    "description": "AC service, gas refill, installation and repairs."
+  },
+  {
+    "_id": "civil_work",
+    "name": "Civil Work",
+    "nameLocalized": { "en": "Civil Work", "ta": "கட்டிட வேலை", "kn": "ಸಿವಿಲ್ ಕೆಲಸ", "hi": "सिविल कार्य" },
+    "iconKey": "civil_work",
+    "minCharge": 499,
+    "serviceCharge": 499,
+    "sparePartsPriceList": {},
+    "gstPercent": 18,
+    "isActive": true,
+    "sortOrder": 4,
+    "tags": [],
+    "description": "Tiling, plastering, waterproofing and masonry."
+  },
+  {
+    "_id": "carpenter",
+    "name": "Carpenter",
+    "nameLocalized": { "en": "Carpenter", "ta": "தச்சு வேலை", "kn": "ಬಡಗಿ ಕೆಲಸ", "hi": "बढ़ई" },
+    "iconKey": "carpenter",
+    "minCharge": 249,
+    "serviceCharge": 349,
+    "sparePartsPriceList": {},
+    "gstPercent": 18,
+    "isActive": true,
+    "sortOrder": 5,
+    "tags": [],
+    "description": "Doors, windows, furniture repair and fittings."
+  },
+  {
+    "_id": "cleaning",
+    "name": "Cleaning",
+    "nameLocalized": { "en": "Cleaning", "ta": "சுத்தம்", "kn": "ಸ್ವಚ್ಛಗೊಳಿಸುವಿಕೆ", "hi": "सफाई" },
+    "iconKey": "cleaning",
+    "minCharge": 299,
+    "serviceCharge": 399,
+    "sparePartsPriceList": {},
+    "gstPercent": 18,
+    "isActive": true,
+    "sortOrder": 6,
+    "tags": [],
+    "description": "Home, sofa, kitchen and deep cleaning."
+  },
+  {
+    "_id": "painting",
+    "name": "Painting",
+    "nameLocalized": { "en": "Painting", "ta": "வண்ணம் தீட்டுதல்", "kn": "ಬಣ್ಣ ಹಚ್ಚುವುದು", "hi": "पेंटिंग" },
+    "iconKey": "painting",
+    "minCharge": 499,
+    "serviceCharge": 499,
+    "sparePartsPriceList": {},
+    "gstPercent": 18,
+    "isActive": true,
+    "sortOrder": 7,
+    "tags": [],
+    "description": "Wall painting, texture and water-proofing coats."
+  },
+  {
+    "_id": "cctv_installation",
+    "name": "CCTV Installation",
+    "nameLocalized": { "en": "CCTV Installation", "ta": "சிசிடிவி நிறுவல்", "kn": "CCTV ಅಳವಡಿಕೆ", "hi": "सीसीटीवी इंस्टॉलेशन" },
+    "iconKey": "cctv_installation",
+    "minCharge": 399,
+    "serviceCharge": 499,
+    "sparePartsPriceList": {},
+    "gstPercent": 18,
+    "isActive": true,
+    "sortOrder": 8,
+    "tags": [],
+    "description": "CCTV cameras, wiring, DVR setup and configuration."
+  },
+  {
+    "_id": "ro_geyser_solar",
+    "name": "RO, Geyser, Solar",
+    "nameLocalized": { "en": "RO, Geyser, Solar", "ta": "ஆர்ஓ, கீசர், சோலார்", "kn": "RO, ಗೀಸರ್, ಸೋಲಾರ್", "hi": "आरओ, गीज़र, सोलर" },
+    "iconKey": "ro_geyser_solar",
+    "minCharge": 249,
+    "serviceCharge": 349,
+    "sparePartsPriceList": {},
+    "gstPercent": 18,
+    "isActive": true,
+    "sortOrder": 9,
+    "tags": ["emergency"],
+    "description": "RO purifiers, geysers and solar water heaters."
+  }
+]

@@ -1,0 +1,264 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ------------------------------------------------------------------
+    // Feature 1: Authentication & role-based navigation
+    // ------------------------------------------------------------------
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+
+      allow create: if isSelf(uid)
+        && request.resource.data.role in ['customer', 'technician']
+        && request.resource.data.isBlocked == false
+        && request.resource.data.onboardingCompleted == true;
+
+      allow update: if isSelf(uid)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.isBlocked == resource.data.isBlocked;
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Feature 2: Catalog + bookings
+    // Services and offers are admin-managed; any signed-in user reads them.
+    // ------------------------------------------------------------------
+    match /services/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /offers/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ------------------------------------------------------------------
+    // Feature 3: Technician profiles + matching
+    // ------------------------------------------------------------------
+    match /technicians/{uid} {
+      // Any signed-in user can read technician profiles (customers need
+      // them for "technician details"; matching reads are server-side).
+      allow read: if isSignedIn();
+
+      // Created during onboarding; stats start at zero and availability off.
+      allow create: if isSelf(uid)
+        && request.resource.data.isAvailable == false
+        && request.resource.data.rating == 0
+        && request.resource.data.ratingsCount == 0;
+
+      // Self-updates: only availability + location + timestamps may change.
+      // Skills, stats, KYC, subscription, and skill-test results are
+      // protected (admin/backend only).
+      allow update: if isSelf(uid)
+        && request.resource.data.skills == resource.data.skills
+        && request.resource.data.experienceYears == resource.data.experienceYears
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.ratingsCount == resource.data.ratingsCount
+        && request.resource.data.completedJobs == resource.data.completedJobs
+        && request.resource.data.cancelledJobs == resource.data.cancelledJobs
+        && request.resource.data.kycStatus == resource.data.kycStatus
+        && request.resource.data.subscription == resource.data.subscription
+        && request.resource.data.skillTest == resource.data.skillTest;
+      allow delete: if false;
+    }
+
+    match /bookings/{id} {
+      // Customers create their own bookings. Status must start at pending.
+      allow create: if isSignedIn()
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.technicianId == null
+        && request.resource.data.location is map
+        && request.resource.data.pricing is map;
+
+      // Read: customer, assigned technician, active candidate, or admin.
+      allow read: if isSignedIn()
+        && (resource.data.customerId == request.auth.uid
+            || resource.data.technicianId == request.auth.uid
+            || ('matching' in resource.data.keys()
+                && resource.data.matching.candidates is list
+                && resource.data.matching.candidates.hasAny([request.auth.uid]))
+            || isAdmin());
+
+      // Customers may attach media after creation (mediaUrls), cancel
+      // while pending/matching, and update their own timestamps.
+      // All assignment + payment fields are protected (Cloud Functions).
+      allow update: if isSignedIn()
+        && resource.data.customerId == request.auth.uid
+        && request.resource.data.customerId == resource.data.customerId
+        && request.resource.data.technicianId == resource.data.technicianId
+        && request.resource.data.categoryId == resource.data.categoryId
+        && request.resource.data.scheduledAt == resource.data.scheduledAt
+        && request.resource.data.isEmergency == resource.data.isEmergency
+        && request.resource.data.pricing == resource.data.pricing
+        && request.resource.data.payment == resource.data.payment
+        && request.resource.data.complaint == resource.data.complaint
+        && (resource.data.status in ['pending', 'matching'])
+        && request.resource.data.status in
+           [resource.data.status, 'cancelled'];
+
+      // Customers may delete while pending (rollback of failed uploads).
+      allow delete: if isSignedIn()
+        && resource.data.customerId == request.auth.uid
+        && resource.data.status == 'pending';
+    }
+
+    // ------------------------------------------------------------------
+    // Feature 5: Job chat (plan §2.4)
+    // The chat document is created server-side on job acceptance; only
+    // participants may read it. Messages are participant-created with a
+    // server timestamp; update/delete are forbidden (immutable log).
+    // ------------------------------------------------------------------
+    function isChatParticipant(chatId) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/chats/$(chatId)).data != null
+        && (get(/databases/$(database)/documents/chats/$(chatId)).data.customerId == request.auth.uid
+            || get(/databases/$(database)/documents/chats/$(chatId)).data.technicianId == request.auth.uid);
+    }
+
+    match /chats/{chatId} {
+      allow read: if isChatParticipant(chatId);
+      // Server-managed document (created on acceptance, summary updated
+      // by the message trigger).
+      allow create, update, delete: if false;
+
+      match /messages/{msgId} {
+        allow read: if isChatParticipant(chatId);
+
+        allow create: if isChatParticipant(chatId)
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.type in ['text', 'image']
+          && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // Feature 6: Ratings & reviews (plan §2.4)
+    // One review per booking, written by the customer after completion.
+    // The rating is immutable; the technician aggregate lives on
+    // technicians/{uid} and is maintained by Cloud Functions.
+    // ------------------------------------------------------------------
+    function isBookingParticipant(bookingId) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/bookings/$(bookingId)).data != null
+        && (get(/databases/$(database)/documents/bookings/$(bookingId)).data.customerId == request.auth.uid
+            || get(/databases/$(database)/documents/bookings/$(bookingId)).data.technicianId == request.auth.uid);
+    }
+
+    function isCompletedBooking(bookingId) {
+      return get(/databases/$(database)/documents/bookings/$(bookingId)).data.status == 'completed';
+    }
+
+    function bookingTechnician(bookingId) {
+      return get(/databases/$(database)/documents/bookings/$(bookingId)).data.technicianId;
+    }
+
+    match /reviews/{bookingId} {
+      allow create: if isSignedIn()
+        && !exists(/databases/$(database)/documents/reviews/$(bookingId))
+        && isBookingParticipant(bookingId)
+        && get(/databases/$(database)/documents/bookings/$(bookingId)).data.customerId == request.auth.uid
+        && isCompletedBooking(bookingId)
+        && request.resource.data.technicianId == bookingTechnician(bookingId)
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.createdAt == request.time;
+      allow read: if isSignedIn()
+        && (isBookingParticipant(bookingId) || isAdmin());
+      allow update: if isSignedIn()
+        && resource.data.customerId == request.auth.uid
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Feature 8: Payments (plan §2.6)
+    // Payment records are created/updated exclusively by Cloud Functions
+    // (initiatePayment/confirmPayment) — clients only read.
+    // ------------------------------------------------------------------
+    match /payments/{bookingId} {
+      allow read: if isSignedIn()
+        && (resource.data.customerId == request.auth.uid
+            || resource.data.technicianId == request.auth.uid
+            || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Feature 9: Complaints & refunds (plan §2.8)
+    // Complaints are created via the submitComplaint callable (one per
+    // booking); clients only read. Booking complaint map is immutable
+    // from clients too (protected in the booking update rule above).
+    // ------------------------------------------------------------------
+    match /complaints/{bookingId} {
+      allow read: if isSignedIn()
+        && (resource.data.customerId == request.auth.uid
+            || resource.data.technicianId == request.auth.uid
+            || isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Feature 11: Spare parts marketplace (plan §5)
+    // Parts are admin-managed (like services); technicians place orders
+    // on themselves. Order lifecycle (pending → fulfilled/cancelled) is
+    // driven by admins; technicians may cancel only while pending.
+    // ------------------------------------------------------------------
+    match /spare_parts/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /spare_orders/{orderId} {
+      allow create: if isSignedIn()
+        && request.resource.data.technicianId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.partId is string
+        && request.resource.data.partName is string
+        && request.resource.data.quantity is int
+        && request.resource.data.quantity >= 1
+        && request.resource.data.amount is int
+        && request.resource.data.amount >= 0;
+
+      allow read: if isSignedIn()
+        && (resource.data.technicianId == request.auth.uid || isAdmin());
+
+      allow update: if isSignedIn()
+        && (isAdmin()
+            || (resource.data.technicianId == request.auth.uid
+                && resource.data.status == 'pending'
+                && request.resource.data.status == 'cancelled'));
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Feature 13: Training videos (plan §5 technician safety & learning)
+    // Admin-managed playlists; any signed-in user can watch.
+    // ------------------------------------------------------------------
+    match /training_videos/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

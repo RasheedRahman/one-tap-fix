@@ -1,0 +1,99 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return request.auth != null
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Is the caller the customer or assigned technician of this booking?
+    function isBookingParticipant(bookingId) {
+      return isSignedIn()
+        && firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data
+             .customerId == request.auth.uid
+           || firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data
+             .technicianId == request.auth.uid;
+    }
+
+    // Feature 5: chat photos. Only chat participants may read/write.
+    function isChatParticipant(chatId) {
+      return isSignedIn()
+        && firestore.get(/databases/(default)/documents/chats/$(chatId)).data != null
+        && (firestore.get(/databases/(default)/documents/chats/$(chatId)).data
+              .customerId == request.auth.uid
+            || firestore.get(/databases/(default)/documents/chats/$(chatId)).data
+              .technicianId == request.auth.uid);
+    }
+
+    // Feature 1: user profile images.
+    match /users/{uid}/profile.jpg {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == uid
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // Feature 2: booking problem photos/videos.
+    // The booking doc must exist (created before upload) and the caller
+    // must be the customer who owns it.
+    match /bookings/{bookingId}/problem_photos/{file} {
+      allow read: if isBookingParticipant(bookingId) || isAdmin();
+      allow write: if isBookingParticipant(bookingId)
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    match /bookings/{bookingId}/problem_videos/{file} {
+      allow read: if isBookingParticipant(bookingId) || isAdmin();
+      allow write: if isBookingParticipant(bookingId)
+                   && request.resource.size < 50 * 1024 * 1024
+                   && request.resource.contentType.matches('video/.*');
+    }
+
+    // Feature 5: chat photos.
+    match /chats/{chatId}/photos/{file} {
+      allow read: if isChatParticipant(chatId);
+      allow write: if isChatParticipant(chatId)
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Feature 6: review photos — the customer writes them against their
+    // completed booking before the review document is created.
+    function isCompletedBookingParticipant(bookingId) {
+      return isSignedIn()
+        && firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data
+             .status == 'completed'
+        && firestore.get(/databases/(default)/documents/bookings/$(bookingId)).data
+             .customerId == request.auth.uid;
+    }
+
+    match /reviews/{bookingId}/photos/{file} {
+      allow read: if isSignedIn()
+        && (isBookingParticipant(bookingId) || isAdmin());
+      allow write: if isCompletedBookingParticipant(bookingId)
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Feature 9: complaint photos — the customer writes them against a
+    // completed booking before submitting the complaint callable.
+    match /complaints/{bookingId}/photos/{file} {
+      allow read: if isSignedIn()
+        && (isBookingParticipant(bookingId) || isAdmin());
+      allow write: if isCompletedBookingParticipant(bookingId)
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Everything else is denied until its feature lands.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

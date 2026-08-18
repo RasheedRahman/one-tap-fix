@@ -1,0 +1,52 @@
+// Seed data for the `training_videos` collection (plan §5).
+// Import via Firebase Console → Firestore → Data → "Start collection"
+// with collection id `training_videos`, then paste each object as a
+// document. `url` is opened in the technician app via url_launcher, so
+// public YouTube links work well. `isActive: true` items are shown.
+[
+  {
+    "_id": "safety_first",
+    "title": "Electrical safety on site",
+    "url": "https://www.youtube.com/results?search_query=electrical+safety+at+workplace+india",
+    "description": "PPE, lockout-tagout and live-wire precautions.",
+    "durationMinutes": 15,
+    "sortOrder": 1,
+    "isActive": true
+  },
+  {
+    "_id": "ladder_safety",
+    "title": "Ladder & height work safety",
+    "url": "https://www.youtube.com/results?search_query=ladder+safety+training+video",
+    "description": "3-point contact, angle rule and safe setups.",
+    "durationMinutes": 10,
+    "sortOrder": 2,
+    "isActive": true
+  },
+  {
+    "_id": "geyser_repair",
+    "title": "Geyser element & thermostat replacement",
+    "url": "https://www.youtube.com/results?search_query=geyser+element+replacement+water+heater",
+    "description": "Step-by-step element and thermostat swap.",
+    "durationMinutes": 18,
+    "sortOrder": 3,
+    "isActive": true
+  },
+  {
+    "_id": "ac_basic_troubleshooting",
+    "title": "AC basics: capacitor & sensor checks",
+    "url": "https://www.youtube.com/results?search_query=ac+capacitor+replacement+split+ac",
+    "description": "Common split AC faults and quick fixes.",
+    "durationMinutes": 20,
+    "sortOrder": 4,
+    "isActive": true
+  },
+  {
+    "_id": "wiring_basics",
+    "title": "House wiring fundamentals",
+    "url": "https://www.youtube.com/results?search_query=house+wiring+basics+india",
+    "description": "Load estimation, wire sizing and earthing.",
+    "durationMinutes": 25,
+    "sortOrder": 5,
+    "isActive": true
+  }
+]

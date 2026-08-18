@@ -1,0 +1,159 @@
+// Seed data for the `spare_parts` collection (plan §5 marketplace).
+// Import via Firebase Console → Firestore → Data → "Start collection"
+// with collection id `spare_parts`, then paste each object as a document
+// (or use the bundled importer). Document ids below are recommended.
+//
+// Prices in INR per `unit`. `isActive: true` items appear in the
+// technician store; sort order controls the listing.
+[
+  {
+    "_id": "tap_washer_15mm",
+    "name": "Tap washer 15mm (set of 5)",
+    "categoryId": "plumbing",
+    "description": "Rubber tap washers, standard 15mm seat.",
+    "unit": "pack",
+    "price": 49,
+    "isActive": true,
+    "sortOrder": 1
+  },
+  {
+    "_id": "tap_washer_20mm",
+    "name": "Tap washer 20mm (set of 5)",
+    "categoryId": "plumbing",
+    "description": "Rubber tap washers, 20mm seat.",
+    "unit": "pack",
+    "price": 59,
+    "isActive": true,
+    "sortOrder": 2
+  },
+  {
+    "_id": "water_heater_element_2kw",
+    "name": "Water heater element 2kW",
+    "categoryId": "plumbing",
+    "description": "Standard screw-in element for 25-40L geysers.",
+    "unit": "piece",
+    "price": 299,
+    "isActive": true,
+    "sortOrder": 3
+  },
+  {
+    "_id": "flush_valve_set",
+    "name": "Flush valve set",
+    "categoryId": "plumbing",
+    "description": "Complete flush valve assembly for Indian commodes.",
+    "unit": "set",
+    "price": 449,
+    "isActive": true,
+    "sortOrder": 4
+  },
+  {
+    "_id": "fcu_capacitor_2_5uf",
+    "name": "AC capacitor 2.5µF",
+    "categoryId": "ac_repair",
+    "description": "Start/run capacitor for window & split ACs.",
+    "unit": "piece",
+    "price": 249,
+    "isActive": true,
+    "sortOrder": 5
+  },
+  {
+    "_id": "fcu_capacitor_3uf",
+    "name": "AC capacitor 3µF",
+    "categoryId": "ac_repair",
+    "description": "Start/run capacitor for 1-1.5T splits.",
+    "unit": "piece",
+    "price": 279,
+    "isActive": true,
+    "sortOrder": 6
+  },
+  {
+    "_id": "ceiling_fan_capacitor",
+    "name": "Ceiling fan capacitor 2.5µF",
+    "categoryId": "electrical",
+    "description": "Regulator-style fan capacitor.",
+    "unit": "piece",
+    "price": 89,
+    "isActive": true,
+    "sortOrder": 7
+  },
+  {
+    "_id": "switch_6a",
+    "name": "Modular switch 6A",
+    "categoryId": "electrical",
+    "description": "White modular piano switch.",
+    "unit": "piece",
+    "price": 49,
+    "isActive": true,
+    "sortOrder": 8
+  },
+  {
+    "_id": "switch_16a",
+    "name": "Modular switch 16A",
+    "categoryId": "electrical",
+    "description": "Heavy-duty switch for geysers and ACs.",
+    "unit": "piece",
+    "price": 79,
+    "isActive": true,
+    "sortOrder": 9
+  },
+  {
+    "_id": "socket_6a_3pin",
+    "name": "Modular socket 6A 3-pin",
+    "categoryId": "electrical",
+    "description": "White modular socket outlet.",
+    "unit": "piece",
+    "price": 69,
+    "isActive": true,
+    "sortOrder": 10
+  },
+  {
+    "_id": "socket_16a_3pin",
+    "name": "Modular socket 16A 3-pin",
+    "categoryId": "electrical",
+    "description": "High-power socket for geysers and ACs.",
+    "unit": "piece",
+    "price": 99,
+    "isActive": true,
+    "sortOrder": 11
+  },
+  {
+    "_id": "wire_1_5sq_90m",
+    "name": "Wire FR 1.5 sq mm (90m)",
+    "categoryId": "electrical",
+    "description": "Copper single-core wire, 90m coil.",
+    "unit": "coil",
+    "price": 1099,
+    "isActive": true,
+    "sortOrder": 12
+  },
+  {
+    "_id": "inverter_battery_water",
+    "name": "Inverter battery water 5L",
+    "categoryId": "electrical",
+    "description": "Distilled water for lead-acid batteries.",
+    "unit": "bottle",
+    "price": 99,
+    "isActive": true,
+    "sortOrder": 13
+  },
+  {
+    "_id": "door_closer",
+    "name": "Door closer medium",
+    "categoryId": "appliance_repair",
+    "description": "Hydraulic door closer for up to 40kg doors.",
+    "unit": "piece",
+    "price": 399,
+    "isActive": true,
+    "sortOrder": 14
+  },
+  {
+    "_id": "geyser_thermostat",
+    "name": "Geyser thermostat",
+    "categoryId": "plumbing",
+    "description": "Standard bimetal thermostat for 25-40L geysers.",
+    "unit": "piece",
+    "price": 199,
+    "isActive": true,
+    "sortOrder": 15
+  }
+]
